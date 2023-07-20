@@ -1,0 +1,39 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
+#include <arpa/inet.h>
+
+#define PORT 12345
+
+int main() {
+    // Create socket
+    int client_socket = socket(AF_INET, SOCK_STREAM, 0);
+    if (client_socket == -1) {
+        perror("Error creating socket");
+        return 1;
+    }
+
+    // Connect to the server
+    struct sockaddr_in server_address;
+    server_address.sin_family = AF_INET;
+    server_address.sin_port = htons(PORT);
+    inet_pton(AF_INET, "192.168.142.132", &server_address.sin_addr);
+
+    if (connect(client_socket, (struct sockaddr*)&server_address, sizeof(server_address)) == -1) {
+        perror("Error connecting to server");
+        close(client_socket);
+        return 1;
+    }
+
+    // Receive the random number from the server
+    int random_number;
+    recv(client_socket, &random_number, sizeof(random_number), 0);
+
+    printf("Received random number from the server: %d\n", random_number);
+
+    // Close the socket
+    close(client_socket);
+
+    return 0;
+}
+
